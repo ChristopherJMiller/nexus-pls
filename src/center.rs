@@ -6,13 +6,15 @@ use std::task::{Context, Poll};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use chrono::NaiveDateTime;
 use hyper::client::HttpConnector;
 use hyper::{Client, Uri};
-use hyper_tls::HttpsConnector;
+use hyper_rustls::HttpsConnector;
 use serde::Deserialize;
 use teloxide::adaptors::AutoSend;
+use teloxide::payloads::SendMessageSetters;
 use teloxide::prelude::Requester;
-use teloxide::types::{ChatId, Recipient};
+use teloxide::types::{ChatId, ParseMode, Recipient};
 use teloxide::utils::markdown::escape;
 use teloxide::Bot;
 use tracing::{info, warn};
@@ -32,6 +34,18 @@ pub struct Center {
 impl Display for Center {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(f, "`{}` {}", escape(&self.short_name), escape(&self.full_name))
+  }
+}
+
+impl Center {
+  fn appointment_avaliable_msg(&self, slot: &Slot) -> String {
+    let timeslot = NaiveDateTime::parse_from_str(&slot.start_timestamp, "%Y-%m-%dT%H:%M").unwrap();
+    let timeslot = timeslot.format("%l:%M %p on %b %-d").to_string();
+    let link = "https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?lang=en&vo=true&returnUrl=ttp-external&service=nh";
+    format!(
+      "Appointment Avaliable for {}\n{}\n[Schedule Appointment]({})",
+      self.full_name, timeslot, link
+    )
   }
 }
 
@@ -96,7 +110,6 @@ impl CenterDataCollectorTask {
                   .parse()
                   .unwrap();
 
-                  info!("Request URI: {}", uri);
                   let resp = http_client.get(uri).await;
                   if let Ok(resp) = resp {
                     let data: Result<ScheduleSlots, _> =
@@ -129,8 +142,9 @@ impl CenterDataCollectorTask {
                               if let Err(err) = bot
                                 .send_message(
                                   Recipient::Id(ChatId(user_data.chat_id)),
-                                  format!("Appointment Avaliable for {}", CENTER_LUT[&slot.location_id].full_name),
+                                  CENTER_LUT[&slot.location_id].appointment_avaliable_msg(slot),
                                 )
+                                .parse_mode(ParseMode::MarkdownV2)
                                 .await
                               {
                                 warn!("Failed to send bot message {}", err);

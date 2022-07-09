@@ -1,14 +1,15 @@
 use std::collections::HashMap;
+use std::env;
 use std::error::Error;
 
 use center::CentersConfig;
-use hyper_tls::HttpsConnector;
 use lazy_static::lazy_static;
 use redis::Client;
 use teloxide::prelude::*;
 use teloxide::types::{MessageKind, ParseMode};
 use teloxide::utils::command::BotCommands;
 use tokio::sync::Mutex;
+use tracing::info;
 
 use crate::center::{Center, CenterDataCollectorTask, CenterId};
 use crate::tracking::TrackingManager;
@@ -27,20 +28,36 @@ lazy_static! {
 #[tokio::main]
 async fn main() {
   tracing_subscriber::fmt::init();
+  info!("Starting Nexus Pls");
 
   {
+    info!("Configuring Tracking Manager");
     let mut lock = MANAGER.lock().await;
     *lock = Some(TrackingManager::new(Client::open("redis://127.0.0.1/").unwrap()).await);
+    info!("Finished Configuring Tracking Manager");
   }
 
-  let https = HttpsConnector::new();
+  info!("Configuring Https Client");
+  let https = hyper_rustls::HttpsConnectorBuilder::new()
+    .with_native_roots()
+    .https_only()
+    .enable_http1()
+    .build();
   let client = hyper::Client::builder().build::<_, hyper::Body>(https);
-  let bot = Bot::from_env().auto_send();
 
+  info!("Configuring Telegram Bot");
+  if env::var("TELOXIDE_TOKEN").is_err() {
+    panic!("Could not parse or find Bot token TELOXIDE_TOKEN");
+  }
+  let bot = Bot::from_env().auto_send();
+  info!("Telegram Bot Configured");
+
+  info!("Starting Async Jobs");
   tokio::select! {
     _ = CenterDataCollectorTask::new(client, bot.clone()) => {},
     _ = teloxide::commands_repl(bot, answer, Command::ty()) => {}
   };
+  info!("Exiting, Goodbye!");
 }
 
 #[derive(BotCommands, Clone)]
