@@ -8,6 +8,9 @@ A telegram bot to monitor avaliable appointments at NEXUS centers
 ## Getting Started
 
 ```
+# (Optional) Use dev redis server. REDIS_ADDR should be set to redis://127.0.0.1 when in use.
+sudo docker-compose up -d
+
 # Run bot
 REDIS_ADDR=... TELOXIDE_TOKEN=... cargo run
 ```
