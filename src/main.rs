@@ -30,10 +30,12 @@ async fn main() {
   tracing_subscriber::fmt::init();
   info!("Starting Nexus Pls");
 
+  let redis_addr = env::var("REDIS_ADDR").unwrap_or_else(|_| panic!("REDIS_ADDR not defined."));
+
   {
     info!("Configuring Tracking Manager");
     let mut lock = MANAGER.lock().await;
-    *lock = Some(TrackingManager::new(Client::open("redis://127.0.0.1/").unwrap()).await);
+    *lock = Some(TrackingManager::new(Client::open(redis_addr).unwrap()).await);
     info!("Finished Configuring Tracking Manager");
   }
 
