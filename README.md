@@ -11,3 +11,7 @@ A telegram bot to monitor avaliable appointments at NEXUS centers
 # Run bot
 REDIS_ADDR=... TELOXIDE_TOKEN=... cargo run
 ```
+
+## Need More Centers?
+
+Add them to [centers.toml](https://github.com/ChristopherJMiller/nexus-pls/blob/main/centers.toml) and make a PR.
