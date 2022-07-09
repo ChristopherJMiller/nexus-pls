@@ -1,0 +1,5 @@
+services:
+  redis:
+    network_mode: "host"
+    image: docker.io/redis:latest
+    
