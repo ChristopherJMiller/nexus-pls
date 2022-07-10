@@ -40,7 +40,7 @@ impl Display for Center {
 impl Center {
   fn appointment_avaliable_msg(&self, slot: &Slot) -> String {
     let timeslot = NaiveDateTime::parse_from_str(&slot.start_timestamp, "%Y-%m-%dT%H:%M").unwrap();
-    let timeslot = timeslot.format("%l:%M %p on %b %-d").to_string();
+    let timeslot = timeslot.format("%l:%M %p on %A %B %-d").to_string();
     let link = "https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?lang=en&vo=true&returnUrl=ttp-external&service=nh";
     format!(
       "Appointment Avaliable for {}\n{}\n[Schedule Appointment]({})",
@@ -186,7 +186,7 @@ impl Future for CenterDataCollectorTask {
   fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
     if self.next_collection_time.is_none() || Instant::now() >= self.next_collection_time.unwrap() {
       info!("Starting work!");
-      self.next_collection_time = Some(Instant::now() + Duration::from_secs(1 * 60));
+      self.next_collection_time = Some(Instant::now() + Duration::from_secs(40));
 
       if let Ok(mut lock) = MANAGER.try_lock() {
         let centers = lock.as_mut().unwrap().get_center_subscribers();
