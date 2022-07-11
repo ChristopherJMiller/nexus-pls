@@ -186,7 +186,7 @@ impl Future for CenterDataCollectorTask {
   fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
     if self.next_collection_time.is_none() || Instant::now() >= self.next_collection_time.unwrap() {
       info!("Starting work!");
-      self.next_collection_time = Some(Instant::now() + Duration::from_secs(40));
+      self.next_collection_time = Some(Instant::now() + Duration::from_secs(15));
 
       if let Ok(mut lock) = MANAGER.try_lock() {
         let centers = lock.as_mut().unwrap().get_center_subscribers();
@@ -198,7 +198,7 @@ impl Future for CenterDataCollectorTask {
         });
       } else {
         warn!("Failed to acquire lock, trying again shortly");
-        self.next_collection_time = Some(Instant::now() + Duration::from_secs(5));
+        self.next_collection_time = Some(Instant::now() + Duration::from_secs(1));
       }
     }
 
