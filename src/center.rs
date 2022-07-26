@@ -6,7 +6,7 @@ use std::task::{Context, Poll};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use chrono::{NaiveDateTime, Datelike};
+use chrono::{NaiveDateTime, Datelike, NaiveDate};
 use hyper::client::HttpConnector;
 use hyper::{Client, Uri};
 use hyper_rustls::HttpsConnector;
@@ -140,7 +140,9 @@ impl CenterDataCollectorTask {
                           if let Some(user_data) = user_data.unwrap() {
                             for slot in slots.iter() {
                               let timeslot = NaiveDateTime::parse_from_str(&slot.start_timestamp, "%Y-%m-%dT%H:%M").unwrap();
-                              if timeslot.date().year() != 2022 {
+                              let arrival = NaiveDate::from_ymd(2022, 9, 16);
+                              let leave = NaiveDate::from_ymd(2022, 10, 11);
+                              if timeslot.date() >= arrival && timeslot.date() <= leave {
                                 continue;
                               }
                               if let Err(err) = bot
