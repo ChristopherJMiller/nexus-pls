@@ -143,17 +143,16 @@ impl CenterDataCollectorTask {
                               let arrival = NaiveDate::from_ymd(2022, 9, 16);
                               let leave = NaiveDate::from_ymd(2022, 10, 11);
                               if timeslot.date() >= arrival && timeslot.date() <= leave {
-                                continue;
-                              }
-                              if let Err(err) = bot
-                                .send_message(
-                                  Recipient::Id(ChatId(user_data.chat_id)),
-                                  CENTER_LUT[&slot.location_id].appointment_avaliable_msg(slot),
-                                )
-                                .parse_mode(ParseMode::MarkdownV2)
-                                .await
-                              {
-                                warn!("Failed to send bot message {}", err);
+                                if let Err(err) = bot
+                                  .send_message(
+                                    Recipient::Id(ChatId(user_data.chat_id)),
+                                    CENTER_LUT[&slot.location_id].appointment_avaliable_msg(slot),
+                                  )
+                                  .parse_mode(ParseMode::MarkdownV2)
+                                  .await
+                                {
+                                  warn!("Failed to send bot message {}", err);
+                                }     
                               }
                             }
                           }
