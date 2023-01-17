@@ -140,8 +140,8 @@ impl CenterDataCollectorTask {
                           if let Some(user_data) = user_data.unwrap() {
                             for slot in slots.iter() {
                               let timeslot = NaiveDateTime::parse_from_str(&slot.start_timestamp, "%Y-%m-%dT%H:%M").unwrap();
-                              let arrival = NaiveDate::from_ymd(2022, 9, 16);
-                              let leave = NaiveDate::from_ymd(2022, 10, 11);
+                              let arrival = NaiveDate::from_ymd(2023, 1, 1);
+                              let leave = NaiveDate::from_ymd(2023, 2, 1);
                               if timeslot.date() >= arrival && timeslot.date() <= leave {
                                 if let Err(err) = bot
                                   .send_message(
